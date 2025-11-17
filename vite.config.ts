@@ -5,5 +5,5 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   // IMPORTANT: Replace <YOUR_REPOSITORY_NAME> with the name of your GitHub repository
-  base: '/<YOUR_REPOSITORY_NAME>/',
+  base: '/Demo-Player/',
 })
