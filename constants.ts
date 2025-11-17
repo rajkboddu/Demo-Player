@@ -20,6 +20,6 @@ export const SLIDE_DURATION_MS = 15000;
 // =================================================================
 
 export const SLIDESHOW_FILES: Slide[] = [
-  { src: '/slideshow/slide2.jpg' },
-  { src: '/slideshow/slide3.jpg' }
+  { src: '/Demo-Player/slideshow/slide2.jpg' },
+  { src: '/Demo-Player/slideshow/slide3.jpg' }
 ];
