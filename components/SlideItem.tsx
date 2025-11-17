@@ -12,18 +12,31 @@ const SlideItem: React.FC<SlideItemProps> = ({ media, isActive }) => {
 
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (!videoElement) return;
+    // Early return if it's not a video or the ref isn't attached yet.
+    if (media.type !== 'video' || !videoElement) {
+      return;
+    }
 
     if (isActive) {
-      videoElement.currentTime = 0;
-      videoElement.play().catch(error => {
-        // Autoplay is often restricted by browsers and requires the video to be muted.
-        console.error(`Video autoplay was prevented for ${media.src}:`, error);
-      });
+      // We delay the play command to ensure the fade-in transition (1000ms)
+      // has completed. This helps avoid browsers pausing the video for power
+      // saving, as the element is fully visible when play() is called.
+      const playTimer = setTimeout(() => {
+        videoElement.currentTime = 0;
+        const playPromise = videoElement.play();
+        if (playPromise !== undefined) {
+          playPromise.catch(error => {
+            console.error(`Video autoplay was prevented for ${media.src}:`, error);
+          });
+        }
+      }, 1000); // Match the CSS transition duration
+
+      return () => clearTimeout(playTimer);
     } else {
       videoElement.pause();
+      videoElement.currentTime = 0; // Reset video to the start
     }
-  }, [isActive, media.src]);
+  }, [isActive, media.src, media.type]);
 
   const commonClasses = "absolute inset-0 w-full h-full object-cover";
   const transitionClasses = `transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`;
