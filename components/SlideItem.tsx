@@ -9,29 +9,46 @@ interface SlideItemProps {
 
 const SlideItem: React.FC<SlideItemProps> = ({ media, isActive }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null); // Ref for the container div
 
   useEffect(() => {
     const videoElement = videoRef.current;
-    // Early return if it's not a video or the ref isn't attached yet.
-    if (media.type !== 'video' || !videoElement) {
+    const containerElement = containerRef.current;
+
+    // Early return if it's not a video or refs aren't attached yet.
+    if (media.type !== 'video' || !videoElement || !containerElement) {
       return;
     }
+    
+    // Function to play the video safely
+    const playVideo = () => {
+      videoElement.currentTime = 0;
+      const playPromise = videoElement.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.error(`Video autoplay was prevented for ${media.src}:`, error);
+        });
+      }
+    };
 
     if (isActive) {
-      // We delay the play command to ensure the fade-in transition (1000ms)
-      // has completed. This helps avoid browsers pausing the video for power
-      // saving, as the element is fully visible when play() is called.
-      const playTimer = setTimeout(() => {
-        videoElement.currentTime = 0;
-        const playPromise = videoElement.play();
-        if (playPromise !== undefined) {
-          playPromise.catch(error => {
-            console.error(`Video autoplay was prevented for ${media.src}:`, error);
-          });
+      // Instead of a fixed timer, we listen for the CSS transition to end.
+      // This is more reliable as it guarantees the element is fully visible.
+      const handleTransitionEnd = (event: TransitionEvent) => {
+        // We only care about the opacity transition finishing.
+        if (event.propertyName === 'opacity') {
+          playVideo();
         }
-      }, 1000); // Match the CSS transition duration
+      };
+      
+      // The { once: true } option automatically removes the listener after it fires.
+      containerElement.addEventListener('transitionend', handleTransitionEnd, { once: true });
 
-      return () => clearTimeout(playTimer);
+      // Cleanup function to remove the listener if the component unmounts
+      // or isActive changes before the transition finishes.
+      return () => {
+        containerElement.removeEventListener('transitionend', handleTransitionEnd);
+      };
     } else {
       videoElement.pause();
       videoElement.currentTime = 0; // Reset video to the start
@@ -42,7 +59,7 @@ const SlideItem: React.FC<SlideItemProps> = ({ media, isActive }) => {
   const transitionClasses = `transition-opacity duration-1000 ease-in-out ${isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'}`;
 
   return (
-    <div className={`${commonClasses} ${transitionClasses}`}>
+    <div ref={containerRef} className={`${commonClasses} ${transitionClasses}`}>
       {media.type === 'image' ? (
         <img src={media.src} alt="Slideshow content" className="w-full h-full" />
       ) : (
