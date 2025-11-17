@@ -21,7 +21,7 @@ const App: React.FC = () => {
       {SLIDESHOW_FILES.map((slide, index) => (
         <SlideItem
           key={`${slide.src}-${index}`}
-          media={slide}
+          slide={slide}
           isActive={index === currentIndex}
         />
       ))}
