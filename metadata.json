@@ -1,0 +1,5 @@
+{
+  "name": "Full-Screen Slideshow",
+  "description": "A simple, elegant, full-screen slideshow application that automatically plays and loops through a predefined set of images and videos. The content is sourced from a configurable list, and each slide is displayed for 15 seconds.",
+  "requestFramePermissions": []
+}
